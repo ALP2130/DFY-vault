@@ -35,7 +35,7 @@ import { useState, useEffect } from "react";
 const STRIPE_CONFIG = {
   // In development, Vite proxies /api to localhost:3001 (see vite.config.js)
   // In production, replace with your actual backend URL
-  API_URL: "",
+  API_URL: "https://dfy-vault-production.up.railway.app",
   // Replace with your Stripe publishable key
   PUBLISHABLE_KEY: "pk_test_your_key_here",
 };
