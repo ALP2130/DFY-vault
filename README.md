@@ -1,94 +1,44 @@
-# DFY Vault — Digital Products Store with Stripe
+# AtlasAI — AI-Powered Marketing SaaS
 
-A premium online store for selling Done-For-You digital products with resell rights. Built with React + Vite, powered by Stripe Checkout.
+## Quick Start
 
----
+1. Copy `.env.example` → `.env.local` and fill in all values
+2. Run `npm install`
+3. Run `npm run dev`
+4. Open http://localhost:3000
 
-## Quick Start (3 steps)
+## Deploy
 
-### Step 1: Install & run the frontend
+Follow `DEPLOYMENT.md` step by step — takes ~60 minutes.
 
-```bash
-cd dfy-vault
-npm install
-npm run dev
-```
+## Key Files
 
-Your store is now live at **http://localhost:5173**
+| File | Purpose |
+|------|---------|
+| `app/page-landing.jsx` | Premium marketing website |
+| `app/dashboard/DashboardClient.jsx` | AI dashboard app |
+| `app/api/generate/route.ts` | Secure AI generation endpoint |
+| `app/api/stripe/` | Checkout + webhook handlers |
+| `lib/supabase.ts` | Database client |
+| `lib/stripe.ts` | Payment client |
+| `middleware.ts` | Auth route protection |
+| `supabase-schema.sql` | Run in Supabase SQL editor |
+| `DEPLOYMENT.md` | Full deployment guide |
+| `OUTREACH-KIT.md` | 20 DMs + bios + Fiverr gigs |
+| `BUSINESS-BLUEPRINT.md` | Pricing + projections + exit strategy |
 
-### Step 2: Set up Stripe & run the backend
+## Stack
 
-```bash
-cd server
-cp .env.example .env
-# Edit .env and paste your Stripe secret key (get it from https://dashboard.stripe.com/apikeys)
-npm install
-npm start
-```
+- **Frontend:** Next.js 14 (App Router)
+- **Database/Auth:** Supabase
+- **Payments:** Stripe
+- **AI:** Anthropic Claude Sonnet
+- **Hosting:** Vercel
 
-Backend runs at **http://localhost:3001**
+## Pricing Tiers
 
-### Step 3: Create your Stripe products
+- Starter: $297/month
+- Growth: $597/month  
+- Agency: $997/month
 
-With the server running, open a new terminal and run:
-
-```bash
-curl -X POST http://localhost:3001/api/create-products
-```
-
-This creates all 12 products in your Stripe account and returns Price IDs. Copy each Price ID into the matching product's `stripePriceId` field in `src/App.jsx`.
-
----
-
-## Project Structure
-
-```
-dfy-vault/
-├── index.html            # Entry HTML
-├── package.json          # Frontend dependencies
-├── vite.config.js        # Vite config (includes API proxy)
-├── public/
-│   └── vite.svg          # Favicon
-├── src/
-│   ├── main.jsx          # React entry point
-│   └── App.jsx           # Full store application
-└── server/
-    ├── package.json      # Backend dependencies
-    ├── server.js         # Express + Stripe API
-    └── .env.example      # Environment variables template
-```
-
-## How Checkout Works
-
-1. Customer adds products to cart
-2. Customer clicks "Pay with Stripe"
-3. Frontend sends cart items to your backend (`POST /api/create-checkout-session`)
-4. Backend creates a Stripe Checkout Session and returns the URL
-5. Customer is redirected to Stripe's secure hosted checkout page
-6. After payment, customer returns to your site with a success status
-7. Stripe sends a webhook to your backend for order fulfillment
-
-## Deploying
-
-### Frontend (Vercel — recommended)
-1. Push to GitHub
-2. Connect repo to [vercel.com](https://vercel.com)
-3. It auto-detects Vite and deploys
-
-### Backend (Railway — recommended)
-1. Push the `server/` folder to a separate GitHub repo (or use a monorepo)
-2. Connect to [railway.app](https://railway.app)
-3. Add your environment variables in Railway's dashboard
-4. Update `STRIPE_CONFIG.API_URL` in `src/App.jsx` to your Railway URL
-
-### Don't forget
-- Set up your Stripe webhook in the [Stripe Dashboard](https://dashboard.stripe.com/webhooks) pointing to `https://your-backend-url/api/webhook`
-- Update `FRONTEND_URL` in your backend `.env` to your Vercel URL
-- Switch from `sk_test_` to `sk_live_` keys when ready to accept real payments
-
-## Customization
-
-- **Products**: Edit the `PRODUCTS` array in `src/App.jsx`
-- **Branding**: Search for "DFY Vault" and replace with your brand name
-- **Colors**: The main gradient uses `#6C5CE7` → `#E84393` — search and replace
-- **Categories**: Edit the `CATEGORIES` array to match your product types
+Built June 2026.
