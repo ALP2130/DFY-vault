@@ -1,37 +1,51 @@
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
-// Routes that require a logged-in user
 const PROTECTED = ["/dashboard"];
-
-// Routes only for guests (redirect to dashboard if logged in)
 const AUTH_ONLY = ["/login", "/signup"];
 
-export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
+export async function middleware(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({ request });
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
 
-  const path = req.nextUrl.pathname;
+  const { data: { user } } = await supabase.auth.getUser();
 
-  // Redirect logged-out users away from protected routes
-  if (PROTECTED.some(p => path.startsWith(p)) && !session) {
-    const redirectUrl = req.nextUrl.clone();
+  const path = request.nextUrl.pathname;
+
+  if (PROTECTED.some((p) => path.startsWith(p)) && !user) {
+    const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirected", "1");
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Redirect logged-in users away from auth pages
-  if (AUTH_ONLY.some(p => path.startsWith(p)) && session) {
-    const redirectUrl = req.nextUrl.clone();
+  if (AUTH_ONLY.some((p) => path.startsWith(p)) && user) {
+    const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/dashboard";
     return NextResponse.redirect(redirectUrl);
   }
 
-  return res;
+  return supabaseResponse;
 }
 
 export const config = {

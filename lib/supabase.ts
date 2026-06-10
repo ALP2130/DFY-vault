@@ -1,6 +1,12 @@
-import { createClientComponentClient, createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import {
+  createBrowserClient as _createBrowserClient,
+  createServerClient as _createServerClient,
+} from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type Profile = {
@@ -34,16 +40,34 @@ export type SavedContent = {
 };
 
 // ── Client component client (use in "use client" components) ─────────────────
-export const createBrowserClient = () => createClientComponentClient();
+export const createBrowserClient = () =>
+  _createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── Server component client (use in Server Components + Route Handlers) ──────
-export const createServerClient = () =>
-  createServerComponentClient({ cookies });
+export const createServerClient = () => {
+  const cookieStore = cookies();
+  return _createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          try {
+            cookieStore.set(name, value, options);
+          } catch {
+            // Server Components can't set cookies — safe to ignore
+          }
+        });
+      },
+    },
+  });
+};
 
 // ── Admin client (service role — for webhooks ONLY, never expose to browser) ─
 export const createAdminClient = () =>
   createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
@@ -64,7 +88,7 @@ export const PLAN_NAMES: Record<string, string> = {
 };
 
 export function canGenerate(profile: Profile): boolean {
-  if (profile.plan === "agency") return true; // unlimited
+  if (profile.plan === "agency") return true;
   return profile.generations_used < profile.generations_limit;
 }
 
