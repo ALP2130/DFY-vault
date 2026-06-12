@@ -3,7 +3,6 @@ import {
   createServerClient as _createServerClient,
 } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -45,6 +44,8 @@ export const createBrowserClient = () =>
 
 // ── Server component client (use in Server Components + Route Handlers) ──────
 export const createServerClient = () => {
+  // Dynamic require keeps next/headers out of the client bundle
+  const { cookies } = require("next/headers") as typeof import("next/headers");
   const cookieStore = cookies();
   return _createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
